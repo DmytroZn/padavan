@@ -13,17 +13,19 @@ def send_tcp(ip, host, port, send_msg, log):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(5)
         try:
-            s.connect((ip, port))
+            # log.debug(f"https://{host}")
             res = requests.get(f"https://{host}")
-            log.info(res.status_code)
-        except socket.error as e:
+            log.debug(res.status_code)
+            s.connect((ip, port))
+
+        except Exception as e:
             log.error(f'connect error\n {e}')
             return
         s.sendall(send_msg)
-        data = s.recv(1024)
-        data = bytes.decode(data)
+        # data = s.recv(1024)
+        # data = bytes.decode(data)
 
-        log.info(f"Received {data!r}")
+        # log.info(f"Received {data!r}")
 
 
 def send_udp(ip, host, port, send_msg, log):
@@ -83,9 +85,11 @@ if __name__ == "__main__":
         port = data[1]
         type_conn = data[2]
     else:
-        host = 'my.bank-hlynov.ru'
+        host = 'www.mirage.ru'
         port = 443
         type_conn = 'tcp'
+    pid = os.getpid()
+    os.system(f"echo {pid} > pid_{host}1.pid")
 
     main(host, port, type_conn, logger)
 
