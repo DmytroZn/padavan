@@ -2,10 +2,11 @@ import socket
 import sys
 import threading
 import sys
+import requests
 import os
 
 
-def send_tcp(ip, port, send_msg, log):
+def send_tcp(ip, host, port, send_msg, log):
 
     send_msg = str.encode(send_msg)
 
@@ -13,6 +14,8 @@ def send_tcp(ip, port, send_msg, log):
         s.settimeout(5)
         try:
             s.connect((ip, port))
+            res = requests.get(f"https://{host}")
+            log.info(res.status_code)
         except socket.error as e:
             log.error(f'connect error\n {e}')
             return
@@ -23,7 +26,7 @@ def send_tcp(ip, port, send_msg, log):
         log.info(f"Received {data!r}")
 
 
-def send_udp(ip, port, send_msg, log):
+def send_udp(ip, host, port, send_msg, log):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         send_msg = str.encode(send_msg)
         s.sendto(send_msg, (ip, port))
@@ -32,7 +35,7 @@ def send_udp(ip, port, send_msg, log):
         log.info(data)
 
 
-def get_ip_from_url(url: str) -> str:
+def get_ip_from_url(url: str, log) -> str:
     """
     "google.com" -> '142.251.39.46'
     :param url: "google.com"
@@ -44,7 +47,7 @@ def get_ip_from_url(url: str) -> str:
     try:
         site_ip = socket.gethostbyname(url)
     except socket.gaierror:
-        print(f'This site may be not valid "{url}"')
+        log.error(f'This site may be not valid "{url}"')
     return site_ip
 
 
@@ -63,12 +66,12 @@ def main(host, port, type_conn, log):
     log.info('Start Programm')
 
     msg = "Hello world"
-    ip = get_ip_from_url(host)
+    ip = get_ip_from_url(host, log)
     port = int(port)
     if type_conn.strip() == 'tcp':
-        do_threads(100, send_tcp, (ip, port, msg, log))
+        do_threads(100, send_tcp, (ip, host, port, msg, log))
     elif type_conn.strip() == 'udp':
-        do_threads(100, send_udp, (ip, port, msg, log))
+        do_threads(100, send_udp, (ip, host, port, msg, log))
 
 
 if __name__ == "__main__":

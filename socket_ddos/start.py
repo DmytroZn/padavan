@@ -19,7 +19,7 @@ if __name__ == "__main__":
     with daemon.DaemonContext(working_directory=os.getcwd()):
         logger.add(f"log_{host}.log", rotation="1 min", retention="2 min")
         pid = os.getpid()
-        os.system(f"echo {pid} > pid_{host}.py")
+        os.system(f"echo {pid} > pid_{host}.pid")
         main(host, port, type_conn, logger)
         logger.info('end')
 
