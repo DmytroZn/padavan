@@ -14,8 +14,11 @@ def send_tcp(ip, host, port, send_msg, log):
         s.settimeout(5)
         try:
             # log.debug(f"https://{host}")
-            res = requests.get(f"https://{host}")
-            log.debug(res.status_code)
+            try:
+                res = requests.get(f"https://{host}")
+                log.debug(res.status_code)
+            except:
+                pass
             s.connect((ip, port))
 
         except Exception as e:
