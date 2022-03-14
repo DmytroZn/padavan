@@ -69,7 +69,7 @@ def do_threads(n_thread, func, args):
 
 def main(host, port, type_conn, log):
     log.info('Start Programm')
-
+    host = host.strip()
     msg = "Hello world"
     ip = get_ip_from_url(host, log)
     port = int(port)
